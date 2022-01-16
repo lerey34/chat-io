@@ -1,46 +1,105 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
-  <link rel="stylesheet" href="css/style.css">
-  <title>ChatCord App</title>
-</head>
-<body>
-  <div class="chat-container">
-    <header class="chat-header">
-      <h1><i class="fas fa-smile"></i> ChatCord</h1>
-      <a href="index.html" class="btn">Leave Room</a>
-    </header>
-    <main class="chat-main">
-      <div class="chat-sidebar">
-        <h3><i class="fas fa-comments"></i> Room Name:</h3>
-        <h2 id="room-name"></h2>
-        <h3><i class="fas fa-users"></i> Users</h3>
-        <ul id="users"></ul>
-      </div>
-      <div class="chat-messages"></div>
-    </main>
-    <div class="chat-form-container">
-      <form id="chat-form">
-        <input
-          id="msg"
-          type="text"
-          placeholder="Enter Message"
-          required
-          autocomplete="off"
-        />
-        <button class="btn"><i class="fas fa-paper-plane"></i> Send</button>
-      </form>
-    </div>
-  </div>
-  <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.9.2/qs.min.js"
-      integrity="sha256-TDxXjkAUay70ae/QJBEpGKkpVslXaHHayklIVglFRT4="
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chat-io</title>
+
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+      integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
       crossorigin="anonymous"
-    ></script>
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="js/main.js"></script>
-</body>
+    />
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+
+  <body>
+    <nav
+      class="navbar navbar-inverse"
+      style="background-color: #ff6666; border: none"
+      id="navBar"
+    >
+      <span class="navbar-brand" style="color: white">Chat-io</span>
+      <ul id="ul_navbar" class="nav navbar-nav"></ul>
+      <ul class="nav navbar-nav pull-right">
+        <li>
+          <a href="#" class="pull-right hidden-xs"
+            ><span id="id" style="color: white"></span
+          ></a>
+        </li>
+      </ul>
+    </nav>
+    <main class="container" id="info">
+      <div class="page">
+        <div class="text-center">
+          <header class="container header align-middle">
+            <h1 class="text-muted">
+              Hello, Welcome to the Chat-io!<br /><br />
+            </h1>
+          </header>
+          <div class="text-muted">
+            <h4>
+              Here there is a chat who you can chat in Public or in Private<br />
+              Have fun with the Chat-io!!!<br /><br />
+              You can join the public Chat-io here :
+              <a href="#public">Public Chat-io</a>
+            </h4>
+          </div>
+        </div>
+      </div>
+      <div class="page" id="public">
+        <div class="chat-container">
+          <header class="chat-header">
+            <h1>Public</h1>
+            <form action="index.html">
+              <button class="btn" id="leave">Leave</button>
+            </form>
+          </header>
+          <main class="chat-main">
+            <div class="chat-messages"></div>
+          </main>
+          <div class="chat-form-container">
+            <form id="chat-form">
+              <input
+                class="inpt"
+                id="msg"
+                type="text"
+                placeholder="Enter Message"
+                required
+                autocomplete="off"
+              />
+              <button class="btn" id="send">Send</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="page" id="private">
+        <div class="chat-container">
+          <header class="chat-header">
+            <h1>Private</h1>
+            <a href="index.html" class="btn">Leave</a>
+          </header>
+          <main class="chat-main">
+            <div class="chat-messagespv"></div>
+          </main>
+          <div class="chat-form-container">
+            <form id="chat-form">
+              <input
+                class="inpt"
+                id="msgpv"
+                type="text"
+                placeholder="Enter Message"
+                required
+                autocomplete="off"
+              />
+              <button class="btn" id="sendpv">Send</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/app.js"></script>
+  </body>
 </html>

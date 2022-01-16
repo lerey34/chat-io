@@ -1,45 +1,94 @@
-const express = require('express')
-const app = express()
-const PORT = 3000 || process.env.PORT
-const path = require('path')
-const http = require('http')
-const server = http.createServer(app)
-const socketio = require('socket.io')
-const io = socketio(server)
+const express = require("express");
+const app = express();
+const http = require("http");
+const server = http.createServer(app);
+var bodyParser = require("body-parser");
+const cookie = require("cookie");
 
-const formatMessage = require('./utils/messages')
-const { userJoin, getCurrentUser, userLeaveChat, getRoomUser } = require('./utils/users')
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static("public"));
 
-const botName = "Chat Bot"
+const socket = require("socket.io");
+const io = socket(server);
 
-app.use(express.static(path.join(__dirname, 'public')))
+var connexion = [];
 
-io.on('connection', socket => {
-  socket.on('joinRoom', ({ username, room }) => {
-    const user = userJoin(socket.id, username, room)
-    socket.join(user.room)
+io.attach(server, {
+  cookie: false,
+});
 
-    socket.emit('message', formatMessage(botName, 'Welcome to Chat!'))
+// io.engine.on("headers", (headers, request) => {
+//   headers["set-cookie"] = cookie.serialize("room", "public");
+// });
 
-    socket.broadcast.to(user.room).emit('message', formatMessage(botName, `${user.username} has joined the chat`))
+io.on("connection", (socket) => {
+  socket.on("login", () => {
+    const cookies = cookie.parse(socket.request.headers.cookie || "");
+    var i = connexion.length;
+    connexion[i] = cookies.username;
+    socket.join(cookies.room);
+    io.to(cookies.room).emit("id", cookies.username, connexion);
+  });
 
-    io.to(user.room).emit('roomUsers', {
-      room: user.room,
-      users: getRoomUser(user.room)
-    })
-  })
-
-  socket.on('chatMessage', (msg) => {
-    const user = getCurrentUser(socket.id)
-    io.to(user.room).emit('message', formatMessage(user.username, msg))
-  })
-
-  socket.on('disconnect', () => {
-    const user = userLeaveChat(socket.id)
-    if (user) {
-      io.to(user.room).emit('message', formatMessage(botName, `${user.username} has left the chat`))
+  socket.on("disconnect", () => {
+    const cookies = cookie.parse(socket.request.headers.cookie || "");
+    for (let i = 0; i < connexion.length; i++) {
+      if (connexion[i] == cookies.username) {
+        connexion.splice(i, 1);
+        io.to(cookies.room).emit("id", "", connexion);
+      }
     }
-  })
-})
+  });
 
-server.listen(PORT, () => console.log(`Connected on port ${PORT}`))
+  socket.on("leave", (user) => {
+    const cookies = cookie.parse(socket.request.headers.cookie || "");
+    for (let i = 0; i < connexion.length; i++) {
+      if (connexion[i] == user) {
+        connexion.splice(i, 1);
+        io.to(cookies.room).emit("id", "", connexion);
+      }
+    }
+  });
+
+  socket.on("chatMessagePrivate", (rooms, msg) => {
+    const cookies = cookie.parse(rooms || "");
+    console.log(cookies.room);
+    io.to(cookies.room).emit("messagePrivate", msg, cookies.username);
+  });
+
+  socket.on("chatMessage", (rooms, msg) => {
+    const cookies = cookie.parse(rooms || "");
+    console.log(cookies.room);
+    io.to(cookies.room).emit("messagePublic", msg, cookies.username);
+  });
+
+  socket.on("changeRoom", (room) => {
+    const cookies = cookie.parse(socket.request.headers.cookie || "");
+    socket.leave(cookies.room);
+    if (room == "public") {
+      socket.join("public");
+      socket.emit("changeCookie", "public");
+    } else {
+      let tab_user = [cookies.username, room];
+      tab_user.sort();
+      let name = tab_user[0] + tab_user[1];
+      socket.join(name);
+      socket.emit("changeCookie", name);
+    }
+  });
+});
+
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/public/index.html");
+});
+
+app.post("/login", (req, res) => {
+  res.cookie("username", req.body.username);
+  res.cookie("room", "public");
+  res.sendFile(__dirname + "/public/chat.html");
+});
+
+server.listen(8080, () => {
+  console.log("server on 8080");
+});
